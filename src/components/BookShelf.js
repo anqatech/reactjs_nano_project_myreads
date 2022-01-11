@@ -5,19 +5,18 @@ import BookListElement from "./BookListElement";
 
 class BookShelf extends React.Component {
     render() {
-        const { bookList } = this.props
+        const { booksList } = this.props
 
         return (
             <div className="bookshelf">
                 <h2 className="bookshelf-title">{ this.props.shelfTitle }</h2>
                 <div className="bookshelf-books">
                     <ol className="books-grid">
-                        {bookList.map(book =>
+                        {booksList.map(book =>
                             <li key={uuidv4()}>
                                 <BookListElement 
-                                    bookCoverURL={ book.bookCoverURL }
-                                    bookTitle={ book.bookTitle }
-                                    bookAuthor={ book.bookAuthor }
+                                    book={ book }
+                                    handleShelfChange={ this.props.handleShelfChange }
                                 />
                             </li>
                         )}

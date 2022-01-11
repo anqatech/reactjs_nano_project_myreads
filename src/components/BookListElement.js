@@ -3,7 +3,7 @@ import React from "react";
 
 class BookListElement extends React.Component {
     render() {
-        const { bookCoverURL, bookTitle, bookAuthor } = this.props
+        const { id, bookCoverURL, bookTitle, bookAuthor, shelf } = this.props.book
 
         return (
             <div className="book">
@@ -13,7 +13,7 @@ class BookListElement extends React.Component {
                         style={{ width: 128, height: 193, backgroundImage: bookCoverURL }}
                     ></div>
                     <div className="book-shelf-changer">
-                        <select>
+                        <select name={ id } value={ shelf } onChange={ this.props.handleShelfChange }>
                             <option value="move" disabled>Move to...</option>
                             <option value="currentlyReading">Currently Reading</option>
                             <option value="wantToRead">Want to Read</option>
