@@ -1,5 +1,4 @@
 import React from "react";
-import { v4 as uuidv4 } from 'uuid';
 import BookShelf from "./BookShelf";
 import * as BooksAPI from '../BooksAPI'
 
@@ -13,7 +12,7 @@ class ListBooks extends React.Component {
         BooksAPI.getAll()
             .then(books => {
                 const data = books.map(book => ({
-                    id: uuidv4(),
+                    id: book.id,
                     bookCoverURL: `url(${book.imageLinks.thumbnail})`,
                     bookTitle: book.title,
                     bookAuthor: book.authors.join(', '),
@@ -27,14 +26,17 @@ class ListBooks extends React.Component {
     }
 
     handleShelfChange = (event) => {
-        const bookId = event.target.name
+        const targetId = event.target.name
         const newShelf = event.target.value
+        const [bookToBeUpdated] = this.state.booksList.filter(book => book.id === targetId)
+        BooksAPI.update(bookToBeUpdated, newShelf)
 
         this.setState((currentState) => ({
             booksList: currentState.booksList.map(book => {
-                return book.id === bookId? {...book, shelf: newShelf}: book
+                return book.id === targetId? {...book, shelf: newShelf}: book
             })
         }))
+
     }
 
     render() {

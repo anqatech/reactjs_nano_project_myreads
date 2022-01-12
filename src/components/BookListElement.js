@@ -1,4 +1,5 @@
 import React from "react";
+import MoveDropdown from "./MoveDropdown";
 
 
 class BookListElement extends React.Component {
@@ -12,20 +13,15 @@ class BookListElement extends React.Component {
                         className="book-cover" 
                         style={{ width: 128, height: 193, backgroundImage: bookCoverURL }}
                     ></div>
-                    <div className="book-shelf-changer">
-                        <select name={ id } value={ shelf } onChange={ this.props.handleShelfChange }>
-                            <option value="move" disabled>Move to...</option>
-                            <option value="currentlyReading">Currently Reading</option>
-                            <option value="wantToRead">Want to Read</option>
-                            <option value="read">Read</option>
-                            <option value="none">None</option>
-                        </select>
-                    </div>
+                    <MoveDropdown 
+                        id={ id }
+                        shelf={ shelf }
+                        handleShelfChange={ this.props.handleShelfChange }
+                    />
                 </div>
                 <div className="book-title">{ bookTitle }</div>
                 <div className="book-authors">{ bookAuthor }</div>
             </div>
-
         )
     }
 }
