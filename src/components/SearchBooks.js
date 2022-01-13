@@ -2,7 +2,7 @@ import React from "react";
 import { v4 as uuidv4 } from 'uuid';
 import BookListElement from "./BookListElement";
 import * as BooksAPI from '../BooksAPI'
-import { element } from "prop-types";
+
 
 
 class SearchBooks extends React.Component {
@@ -25,38 +25,57 @@ class SearchBooks extends React.Component {
 
         BooksAPI.search(this.state.query)
             .then(books => {
-                const data = books.map(book => {
-                    return {
-                        id: book.id,
-                        bookCoverURL: `url(${book.imageLinks.thumbnail})`,
-                        bookTitle: book.title,
-                        bookAuthor: Array.isArray(book.authors) ? book.authors.join(', ') : '',
-                        shelf: 'none'
-                    }
-                })
-
-                this.setState( () => ({
-                    searchResults: data
-                }))
-
-                return data
+                if (typeof books === 'undefined') {
+                    return null
+                } else {
+                    const data = books.map(book => {
+                        return {
+                            id: book.id,
+                            bookCoverURL: `url(${book.imageLinks.thumbnail})`,
+                            bookTitle: book.title,
+                            bookAuthor: Array.isArray(book.authors) ? book.authors.join(', ') : '',
+                            shelf: 'none'
+                        }
+                    })
+    
+                    this.setState( () => ({
+                        searchResults: data
+                    }))
+    
+                    return data    
+                }
             })
             .then(data => {
-                const bookIds = data.map(item => {
-                    BooksAPI.get(item.id)
-                        .then(book => {
-                            this.setState((currentState) => ({
-                                searchResults: currentState.searchResults.map(element => {
-                                    return element.id === book.id? {...element, shelf: book.shelf}: element
-                                })
-                            }))
-                        })
-                        .catch(error => console.log(`Error checking library: ${error}`))
-                })
+                if (typeof data !== 'undefined' && data !== null) {
+                    const bookIds = data.map(item => {
+                        BooksAPI.get(item.id)
+                            .then(book => {
+                                this.setState((currentState) => ({
+                                    searchResults: currentState.searchResults.map(element => {
+                                        return element.id === book.id? {...element, shelf: book.shelf}: element
+                                    })
+                                }))
+                            })
+                            .catch(error => console.log(`Error checking library: ${error}`))
+                    })
+                }
             })
             .catch(error => console.log(`Book Search Error: ${error}`))
     }
 
+    handleSearchShelfChange = (event) => {
+        const targetId = event.target.name
+        const newShelf = event.target.value
+        const [bookToBeAdded] = this.state.searchResults.filter(book => book.id === targetId)
+        BooksAPI.update(bookToBeAdded, newShelf)
+    
+        this.setState((currentState) => ({
+            searchResults: currentState.searchResults.map(book => {
+                return book.id === targetId? {...book, shelf: newShelf}: book
+            })
+        }))
+    }
+    
     render() {
 
         return (
@@ -87,7 +106,7 @@ class SearchBooks extends React.Component {
                             <li key={uuidv4()}>
                                 <BookListElement 
                                     book={ book }
-                                    handleShelfChange={ this.props.handleShelfChange }
+                                    handleShelfChange={ this.handleSearchShelfChange }
                                 />
                             </li>
                         )}

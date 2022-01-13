@@ -1,4 +1,5 @@
 import React from 'react'
+import { Route } from 'react-router-dom'
 import ListBooks from './components/ListBooks'
 import SearchBooks from './components/SearchBooks'
 import * as BooksAPI from './BooksAPI'
@@ -25,17 +26,17 @@ class BooksApp extends React.Component {
   componentDidMount() {
     BooksAPI.getAll()
         .then(books => {
-            const data = books.map(book => ({
-                id: book.id,
-                bookCoverURL: `url(${book.imageLinks.thumbnail})`,
-                bookTitle: book.title,
-                bookAuthor: book.authors.join(', '),
-                shelf: book.shelf
-            }))
+          const data = books.map(book => ({
+              id: book.id,
+              bookCoverURL: `url(${book.imageLinks.thumbnail})`,
+              bookTitle: book.title,
+              bookAuthor: Array.isArray(book.authors) ? book.authors.join(', ') : '',
+              shelf: book.shelf
+          }))
 
-            this.setState( () => ({
-                booksList: data
-            }))
+          this.setState( () => ({
+              booksList: data
+          }))
         })
   }
 
