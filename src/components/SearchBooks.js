@@ -1,7 +1,46 @@
 import React from "react";
+import { v4 as uuidv4 } from 'uuid';
+import BookListElement from "./BookListElement";
+import * as BooksAPI from '../BooksAPI'
 
 
 class SearchBooks extends React.Component {
+    state = {
+        query: '',
+        searchResults: []
+    }
+
+    handleSearchChange = (event) => {
+        this.setState({ query: event.target.value })
+
+        BooksAPI.search(this.state.query)
+            .then(books => {
+                if (typeof books === 'undefined') {
+                    console.log("they are no search resulst yet!")
+                } else {
+                    const data = books.map(book => ({
+                        id: book.id,
+                        bookCoverURL: `url(${book.imageLinks.thumbnail})`,
+                        bookTitle: book.title,
+                        bookAuthor: Array.isArray(book.authors) ? book.authors.join(', ') : '',
+                        shelf: 'none'
+                    }))
+    
+                    this.setState( () => ({
+                        searchResults: data
+                    }))
+                }
+            })
+            .catch(error => console.log(`Book Search Error: ${error}`))
+    }
+
+    handleShelfChange = (event) => {
+        const targetId = event.target.name
+        const newShelf = event.target.value
+        const [bookToBeUpdated] = this.state.searchResults.filter(book => book.id === targetId)
+
+        console.log(`${targetId} -- ${newShelf} -- ${bookToBeUpdated}`)
+    }
 
     render() {
 
@@ -18,12 +57,26 @@ class SearchBooks extends React.Component {
                         However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
                         you don't find a specific author or title. Every search is limited by search terms.
                         */}
-                        <input type="text" placeholder="Search by title or author"/>
+                        <input 
+                            type="text" 
+                            placeholder="Search by title or author"
+                            value={ this.state.query }
+                            onChange={ this.handleSearchChange }
+                        />
 
                     </div>
                 </div>
                 <div className="search-books-results">
-                    <ol className="books-grid"></ol>
+                    <ol className="books-grid">
+                        {this.state.searchResults.map(book =>
+                            <li key={uuidv4()}>
+                                <BookListElement 
+                                    book={ book }
+                                    handleShelfChange={ this.handleShelfChange }
+                                />
+                            </li>
+                        )}
+                    </ol>
                 </div>
             </div>
         )
