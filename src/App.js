@@ -1,6 +1,7 @@
 import React from 'react'
 import ListBooks from './components/ListBooks'
 import SearchBooks from './components/SearchBooks'
+import * as BooksAPI from './BooksAPI'
 import './App.css'
 
 class BooksApp extends React.Component {
@@ -11,7 +12,8 @@ class BooksApp extends React.Component {
      * users can use the browser's back and forward buttons to navigate between
      * pages, as well as provide a good URL they can bookmark and share.
      */
-    showSearchPage: false
+    showSearchPage: false, 
+    booksList: [],
   }
 
   toggleShowSearchPage = () => {
@@ -20,15 +22,49 @@ class BooksApp extends React.Component {
     }))
   }
 
+  componentDidMount() {
+    BooksAPI.getAll()
+        .then(books => {
+            const data = books.map(book => ({
+                id: book.id,
+                bookCoverURL: `url(${book.imageLinks.thumbnail})`,
+                bookTitle: book.title,
+                bookAuthor: book.authors.join(', '),
+                shelf: book.shelf
+            }))
+
+            this.setState( () => ({
+                booksList: data
+            }))
+        })
+  }
+
+  handleShelfChange = (event) => {
+    const targetId = event.target.name
+    const newShelf = event.target.value
+    const [bookToBeUpdated] = this.state.booksList.filter(book => book.id === targetId)
+    BooksAPI.update(bookToBeUpdated, newShelf)
+
+    this.setState((currentState) => ({
+        booksList: currentState.booksList.map(book => {
+            return book.id === targetId? {...book, shelf: newShelf}: book
+        })
+    }))
+  }
+
   render() {
     return (
       <div className="app">
         {this.state.showSearchPage ? (
           <SearchBooks
+            booksList={ this.state.booksList }
+            handleShelfChange={ this.handleShelfChange }
             toggleShowSearchPage={ this.toggleShowSearchPage }
           />
         ) : (
           <ListBooks 
+            booksList={ this.state.booksList }
+            handleShelfChange={ this.handleShelfChange }
             toggleShowSearchPage={ this.toggleShowSearchPage }
           />
         )}
