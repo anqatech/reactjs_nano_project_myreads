@@ -2,6 +2,7 @@ import React from "react";
 import { v4 as uuidv4 } from 'uuid';
 import BookListElement from "./BookListElement";
 import * as BooksAPI from '../BooksAPI'
+import { element } from "prop-types";
 
 
 class SearchBooks extends React.Component {
@@ -24,51 +25,37 @@ class SearchBooks extends React.Component {
 
         BooksAPI.search(this.state.query)
             .then(books => {
-                if (typeof books !== 'undefined') {
-                    const modifiedBooks = books.map(book => {
-                        BooksAPI.get(book.id)
-                            .then(data => {
-                                console.log(data.shelf)
-                                return {...book, shelf: data.shelf}
-                            })
-                            .catch(error => console.log(`Error checking library: ${error}`))
-                    })
-                    console.log(books)
-                    console.log(modifiedBooks)
-                    return modifiedBooks
-                }
-            })
-            .then(modifiedBooks => {
-                console.log(modifiedBooks)
-                if (typeof modifiedBooks !== 'undefined') {
-                    const data = modifiedBooks.map(book => {
-                        return {
-                            id: book.id,
-                            bookCoverURL: `url(${book.imageLinks.thumbnail})`,
-                            bookTitle: book.title,
-                            bookAuthor: Array.isArray(book.authors) ? book.authors.join(', ') : '',
-                            shelf: book.shelf
-                        }
-                    })
+                const data = books.map(book => {
+                    return {
+                        id: book.id,
+                        bookCoverURL: `url(${book.imageLinks.thumbnail})`,
+                        bookTitle: book.title,
+                        bookAuthor: Array.isArray(book.authors) ? book.authors.join(', ') : '',
+                        shelf: 'none'
+                    }
+                })
 
-                    console.log("data ==>")
-                    console.log(data)
-    
-                    this.setState( () => ({
-                        searchResults: data
-                    }))
-                }
+                this.setState( () => ({
+                    searchResults: data
+                }))
+
+                return data
+            })
+            .then(data => {
+                const bookIds = data.map(item => {
+                    BooksAPI.get(item.id)
+                        .then(book => {
+                            this.setState((currentState) => ({
+                                searchResults: currentState.searchResults.map(element => {
+                                    return element.id === book.id? {...element, shelf: book.shelf}: element
+                                })
+                            }))
+                        })
+                        .catch(error => console.log(`Error checking library: ${error}`))
+                })
             })
             .catch(error => console.log(`Book Search Error: ${error}`))
     }
-
-    // handleShelfChange = (event) => {
-    //     const targetId = event.target.name
-    //     const newShelf = event.target.value
-    //     const [bookToBeUpdated] = this.state.searchResults.filter(book => book.id === targetId)
-
-    //     console.log(`${targetId} -- ${newShelf} -- ${bookToBeUpdated}`)
-    // }
 
     render() {
 
@@ -112,3 +99,4 @@ class SearchBooks extends React.Component {
 }
 
 export default SearchBooks
+
