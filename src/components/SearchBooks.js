@@ -24,44 +24,58 @@ class SearchBooks extends React.Component {
     handleSearchChange = (event) => {
         this.setState({ query: event.target.value })
 
-        BooksAPI.search(event.target.value)
-            .then(books => {
-                if (typeof books === 'undefined') {
-                    return null
-                } else {
-                    const data = books.map(book => {
-                        return {
-                            id: book.id,
-                            bookCoverURL: `url(${book.imageLinks.thumbnail})`,
-                            bookTitle: book.title,
-                            bookAuthor: Array.isArray(book.authors) ? book.authors.join(', ') : '',
-                            shelf: 'none'
-                        }
-                    })
-    
+        if (event.target.value !== '') {
+            BooksAPI.search(event.target.value)
+                .then(books => {
+                    if (!Array.isArray(books)) {
+                        this.setState( () => ({
+                            searchResults: []
+                        }))
+                    } else {
+                        const data = books.map(book => {
+                            return {
+                                id: book.id,
+                                bookCoverURL: `url(${book.imageLinks.thumbnail})`,
+                                bookTitle: book.title,
+                                bookAuthor: Array.isArray(book.authors) ? book.authors.join(', ') : '',
+                                shelf: 'none'
+                            }
+                        })
+        
+                        this.setState( () => ({
+                            searchResults: data
+                        }))
+        
+                        return data    
+                    }
+                })
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        data.map(item => (
+                            BooksAPI.get(item.id)
+                                .then(book => {
+                                    this.setState((currentState) => ({
+                                        searchResults: currentState.searchResults.map(element => {
+                                            return element.id === book.id? {...element, shelf: book.shelf}: element
+                                        })
+                                    }))
+                                })
+                                .catch(error => console.log(`Error checking library: ${error}`))
+                        ))
+                    }
+                })
+                .catch(error => {
+                    console.log(`Book Search Error: ${error}`)
+
                     this.setState( () => ({
-                        searchResults: data
+                        searchResults: []
                     }))
-    
-                    return data    
-                }
-            })
-            .then(data => {
-                if (typeof data !== 'undefined' && data !== null) {
-                    data.map(item => (
-                        BooksAPI.get(item.id)
-                            .then(book => {
-                                this.setState((currentState) => ({
-                                    searchResults: currentState.searchResults.map(element => {
-                                        return element.id === book.id? {...element, shelf: book.shelf}: element
-                                    })
-                                }))
-                            })
-                            .catch(error => console.log(`Error checking library: ${error}`))
-                    ))
-                }
-            })
-            .catch(error => console.log(`Book Search Error: ${error}`))
+                })
+        } else {
+            this.setState( () => ({
+                searchResults: []
+            }))
+        }
     }
 
     handleSearchShelfChange = (event) => {
