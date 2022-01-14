@@ -15,7 +15,7 @@ class BooksApp extends React.Component {
         .then(books => {
           const data = books.map(book => ({
               id: book.id,
-              bookCoverURL: `url(${book.imageLinks.thumbnail})`,
+              bookCoverURL: typeof book.imageLinks === 'undefined' ? '' : `url(${book.imageLinks.thumbnail})`,
               bookTitle: book.title,
               bookAuthor: Array.isArray(book.authors) ? book.authors.join(', ') : '',
               shelf: book.shelf

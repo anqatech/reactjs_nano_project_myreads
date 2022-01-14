@@ -35,7 +35,7 @@ class SearchBooks extends React.Component {
                         const data = books.map(book => {
                             return {
                                 id: book.id,
-                                bookCoverURL: `url(${book.imageLinks.thumbnail})`,
+                                bookCoverURL: typeof book.imageLinks === 'undefined' ? '' : `url(${book.imageLinks.thumbnail})`,
                                 bookTitle: book.title,
                                 bookAuthor: Array.isArray(book.authors) ? book.authors.join(', ') : '',
                                 shelf: 'none'
