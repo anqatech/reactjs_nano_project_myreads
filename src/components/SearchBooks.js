@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import BookListElement from "./BookListElement";
 import * as BooksAPI from '../BooksAPI'
@@ -23,7 +24,7 @@ class SearchBooks extends React.Component {
     handleSearchChange = (event) => {
         this.setState({ query: event.target.value })
 
-        BooksAPI.search(this.state.query)
+        BooksAPI.search(event.target.value)
             .then(books => {
                 if (typeof books === 'undefined') {
                     return null
@@ -47,7 +48,7 @@ class SearchBooks extends React.Component {
             })
             .then(data => {
                 if (typeof data !== 'undefined' && data !== null) {
-                    const bookIds = data.map(item => {
+                    data.map(item => (
                         BooksAPI.get(item.id)
                             .then(book => {
                                 this.setState((currentState) => ({
@@ -57,7 +58,7 @@ class SearchBooks extends React.Component {
                                 }))
                             })
                             .catch(error => console.log(`Error checking library: ${error}`))
-                    })
+                    ))
                 }
             })
             .catch(error => console.log(`Book Search Error: ${error}`))
@@ -74,6 +75,8 @@ class SearchBooks extends React.Component {
                 return book.id === targetId? {...book, shelf: newShelf}: book
             })
         }))
+
+        // this.props.handleShelfChange(event)
     }
     
     render() {
@@ -81,7 +84,9 @@ class SearchBooks extends React.Component {
         return (
             <div className="search-books">
                 <div className="search-books-bar">
-                    <button className="close-search" onClick={ () => this.props.toggleShowSearchPage() }>Close</button>
+                    <Link to='/'>
+                        <button className="close-search">Close</button>
+                    </Link>
                     <div className="search-books-input-wrapper">
                         {/*
                         NOTES: The search from BooksAPI is limited to a particular set of search terms.
